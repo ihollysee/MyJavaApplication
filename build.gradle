@@ -11,11 +11,22 @@ sourceSets {
     }
 }
 
-jar {
+jar {//生成jar包的配置
     // Redirect output to match launcher script
     destinationDir = file('build/jar')
     manifest {
         attributes("Main-Class": mainClassName)
     }
+}
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+//    compile 'org.json:json:20150729'
+    compile 'org.json:json:20140107'
+    compile 'commons-io:commons-io:2.4'
 }
 
