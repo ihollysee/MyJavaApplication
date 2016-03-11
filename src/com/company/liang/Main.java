@@ -12,5 +12,10 @@ public class Main {
 
         JSONObject json = new JSONObject(josnStr);
         System.out.println(json.toString());
+
+
+        Boolean data = null;
+        if (Boolean.TRUE.equals(data)) {//不会崩溃
+        }
     }
 }
