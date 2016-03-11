@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="kbatterydoc_en_R" default="prepare-for-cc">
+
+   <import file="D:\hadson\jobs\kBatterydoc_en_R\workspace\kbd_build.xml" />
+   
+    <property file="local.properties" />
+    <property file="default.properties" />
+	<property file="D:\Android_keys\keys.properties" />		
+	
+	<property name="release.dir" value="D:\hadson\jobs\kBatterydoc_en_R\workspace\release" />
+	
+	<target name="-pre-build">
+    	<!-- 
+			main_rule.xml内部使用 android.target.classpath ,
+			而且定义了一个空的-pre-build target,
+			此处添加layoutlib支持
+		--> 
+    	<path id="android.target.classpath"> 
+			<pathelement path="${sdk.dir}/platforms/${target}/data/classes.jar"/>
+    	    <pathelement path="${sdk.dir}/platforms/${target}/android.jar"/>
+    		<pathelement path="${sdk.dir}/platforms/${target}/data/layoutlib.jar"/>			
+			<!--pathelement path="${sdk.dir}/extras/android/compatibility/v4/android-support-v4.jar"/-->
+        </path>
+    </target>
+	
+	<!--默认ijinshan(官网)-->
+	<property name="verChannel" value="10010004"/>
+	<property name="verSuffix" value="ijinshan"/>
+	
+	<property name="java.encoding" value="utf8" />
+	<property name ="key.alias" value="金山手机卫士" />
+	<property name="sigfile" value="kbattery" />
+	<property name="build.sysclasspath" value="ignore" />
+	<property name="dir" value="D:\hadson\jobs\kbatterydoc_en\workspace"/>
+	<property name="ver_dir" value="D:\hadson\jobs\kbatterydoc_en_R\workspace"/>
+<!-- D:\hadson\jobs\kbatterydoc_en\workspace -->
+    <path id="android.antlibs">
+        <pathelement path="${sdk.dir}/tools/lib/anttasks.jar" />
+        <pathelement path="${sdk.dir}/tools/lib/sdklib.jar" />
+        <pathelement path="${sdk.dir}/tools/lib/androidprefs.jar" />
+        <pathelement path="${sdk.dir}/tools/lib/apkbuilder.jar" />
+        <pathelement path="${sdk.dir}/tools/lib/jarutils.jar" />
+    </path>
+	<path id="local.libs">
+		<pathelement path="D:\hadson\jobs\kBatterydoc_en_R\workspace\libs" />
+		<fileset dir="libs">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	
+	<taskdef name="test"
+		classname="setVersionCode.setVerCode"
+		classpathref ="local.libs"/>
+	<target name="tg">
+		<echo> setVersionCode .....${dir}</echo>
+		<test src="${dir}"
+			dir="${ver_dir}"/>
+		<echo>...end of setVersioncode</echo>
+	<!-- 	<java fork="true" classname="setVersionCode.setVerCode">
+		<arg value="${basedir}"/>   
+		<classpath>
+			<path refid="local.libs" />
+		</classpath>
+	</java> -->
+	</target> 
+	
+    <taskdef name="xpath"
+        classname="com.android.ant.XPathTask"
+        classpathref="android.antlibs" />
+	<target name="changeVerName">
+    <xpath input="AndroidManifest.xml" expression="/manifest/@android:versionCode"
+                output="verCode" />	
+    <xpath input="AndroidManifest.xml" expression="/manifest/@android:versionName"
+                output="verName" />
+	<tstamp>
+		<format property="verTimestamp" pattern="yyyyMMdd_HHmmss"/>
+		<format property="buildTimestamp" pattern="yyyy/MM/dd"/>
+	</tstamp>
+
+	<property name="apkname" value="kbatterydoc_en_R_${verName}_${verCode}_${verTimestamp}_${verSuffix}.apk"/>
+	<property name="subdir" value="${verName}_${verCode}_${verTimestamp}"/>
+	<property name="ob.mp.name" value="mapping.txt"/>
+	<echo>apkname:${apkname}</echo>
+	</target>
+	<target name="replace-res.xml">
+		<echo>bakup res/values/strings.xml ...</echo>
+		<copy file="res/values/strings.xml" tofile="build/strings.xml.bak"/>
+		<copy file="res/values-zh/strings.xml" tofile="build/strings.xml.zh.bak"/>
+		
+		<echo>replace channel: ${verChannel}</echo>
+		<replace file="res/values/strings.xml" token="__channel__" value="${verChannel}" encoding="UTF-8" />
+		<replace file="res/values-zh/strings.xml" token="__channel__" value="${verChannel}" encoding="UTF-8" />
+		
+		<echo>replace apkname: ${apkname}</echo>
+		<replace file="res/values/strings.xml" token="__apkname__" value="${apkname}" encoding="UTF-8" />
+		<replace file="res/values-zh/strings.xml" token="__apkname__" value="${apkname}" encoding="UTF-8" />
+				
+		<echo>bakup AndroidManifest.xml ...</echo>
+		<copy file="AndroidManifest.xml" tofile="build/AndroidManifest.xml.bak"/>
+		<echo>set android:debuggable = false</echo>
+		<replace file="AndroidManifest.xml" token="android:debuggable=&quot;true&quot;" 
+											value="android:debuggable=&quot;false&quot;" encoding="UTF-8" />
+	</target>
+	
+	<target name="restore-res.xml">
+		<echo>restore res/values/strings.xml</echo>
+		<move tofile="res/values/strings.xml" file="build/strings.xml.bak"/>
+		<move tofile="res/values-zh/strings.xml" file="build/strings.xml.zh.bak"/>
+
+		<echo>restore AndroidManifest.xml</echo>
+
+		<move tofile="AndroidManifest.xml" file="build/AndroidManifest.xml.bak"/>
+		<echo>mkdir gen</echo>
+		<mkdir dir="gen"/>
+	</target>
+	
+	<target name="copy2dist">
+		<mkdir dir="dist"/>
+		<copy file="bin/kbatterydoc_en_R-release.apk" tofile="dist/${apkname}"/>
+		<copy file="bin/proguard/${ob.mp.name}" tofile="dist/${ob.mp.name}"/>
+	</target>
+	
+	<target name="cleandist">
+		<delete dir="dist"/>
+	</target>
+	
+	<target name="bakup-apk">
+		<mkdir dir="${release.dir}/${verTimestamp}" />
+		<copy tofile="${release.dir}/${verTimestamp}/${apkname}" file="dist/${apkname}"/>
+		<copy tofile="${release.dir}/${verTimestamp}/${ob.mp.name}" file="dist/${ob.mp.name}"/>
+	</target>
+	
+    <target name="compile-main" 
+		depends="tg,changeVerName,cleandist,clean,replace-res.xml,release,copy2dist,restore-res.xml" />
+		
+	<target name="prepare-for-cc" 
+		depends="compile-main,bakup-apk" />
+
+</project>

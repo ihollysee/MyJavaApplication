@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="myjava" default="setVer">
+
+	<path id="local.libs">
+		<pathelement path="D:\workspace\MyJava\mylib" />
+		<fileset dir="mylib">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	<taskdef name="setting" classname="setVersionCode.setVerCode"
+		classpathref="local.libs" />
+	<target name="setVer">
+		<echo> setVersionCode .....${dir}</echo>
+		<setting src="${dir}" dir="${ver_dir}" />
+		<echo>...end of setVersioncode</echo>
+	</target>
+</project>
